@@ -1,0 +1,110 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <ctime>
+using namespace std;
+
+struct Book {
+    string title;
+    string author;
+    string isbn;
+    bool isAvailable;
+    time_t checkoutDate;
+};
+
+vector<Book> library;
+
+void addBook() {
+    Book b;
+    cout << "Enter title (no spaces): ";
+    cin >> b.title;
+    cout << "Enter author (no spaces): ";
+    cin >> b.author;
+    cout << "Enter ISBN: ";
+    cin >> b.isbn;
+    b.isAvailable = true;
+    library.push_back(b);
+    cout << "Book added successfully.\n";
+}
+
+void searchBook() {
+    string keyword;
+    cout << "Enter title/author/ISBN to search (no spaces): ";
+    cin >> keyword;
+    bool found = false;
+    for (auto &b : library) {
+        if (b.title == keyword || b.author == keyword || b.isbn == keyword) {
+            cout << "\nTitle: " << b.title
+                 << "\nAuthor: " << b.author
+                 << "\nISBN: " << b.isbn
+                 << "\nAvailable: " << (b.isAvailable ? "Yes" : "No") << "\n";
+            found = true;
+        }
+    }
+    if (!found)
+        cout << "No book found.\n";
+}
+
+void checkoutBook() {
+    string isbn;
+    cout << "Enter ISBN of the book to checkout: ";
+    cin >> isbn;
+    for (auto &b : library) {
+        if (b.isbn == isbn && b.isAvailable) {
+            b.isAvailable = false;
+            b.checkoutDate = time(0); // current time
+            cout << "Book checked out successfully.\n";
+            return;
+        }
+    }
+    cout << "Book not available or ISBN incorrect.\n";
+}
+
+void returnBook() {
+    string isbn;
+    cout << "Enter ISBN of the book to return: ";
+    cin >> isbn;
+    for (auto &b : library) {
+        if (b.isbn == isbn && !b.isAvailable) {
+            time_t returnTime = time(0);
+            double seconds = difftime(returnTime, b.checkoutDate);
+            int daysLate = seconds / (60 * 60 * 24) - 7; // 7 days allowed
+            if (daysLate > 0) {
+                int fine = daysLate * 2; // ₹2 per day
+                cout << "Book is overdue by " << daysLate << " days. Fine: ₹" << fine << "\n";
+            } else {
+                cout << "Book returned on time. No fine.\n";
+            }
+            b.isAvailable = true;
+            return;
+        }
+    }
+    cout << "Invalid ISBN or book is already available.\n";
+}
+
+void displayMenu() {
+    cout << " LIBRARY MENU \n";
+    cout << "1. Add Book\n";
+    cout << "2. Search Book\n";
+    cout << "3. Checkout Book\n";
+    cout << "4. Return Book\n";
+    cout << "5. Exit\n";
+    cout << "Enter choice: ";
+}
+
+int main() {
+    int choice;
+    do {
+        displayMenu();
+        cin >> choice;
+        switch (choice) {
+            case 1: addBook(); break;
+            case 2: searchBook(); break;
+            case 3: checkoutBook(); break;
+            case 4: returnBook(); break;
+            case 5: cout << "Exiting...\n"; break;
+            default: cout << "Invalid choice!\n";
+        }
+    } while (choice != 5);
+    return 0;
+}
